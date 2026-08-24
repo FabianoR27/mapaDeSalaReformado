@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { alerts } from '../lib/alerts';
 import { Sala } from '../types';
-import { Plus, Search, Edit2, Trash2, DoorOpen, Users, Layers } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, DoorOpen, Users, Layers, RefreshCw } from 'lucide-react';
 
 export const SalasView: React.FC = () => {
   const [salas, setSalas] = useState<Sala[]>([]);
@@ -153,34 +153,34 @@ export const SalasView: React.FC = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-6 sm:py-8">
       {/* Header with Title & Action Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-yellow-500/20 text-yellow-400 rounded-xl">
-              <DoorOpen className="w-6 h-6" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="p-2 sm:p-2.5 bg-yellow-500/20 text-yellow-400 rounded-xl">
+              <DoorOpen className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Salas de Aula</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Salas de Aula</h2>
           </div>
-          <p className="text-sm text-gray-400 mt-1">Gerencie as salas de aula, laboratórios e auditórios da unidade.</p>
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">Gerencie as salas de aula, laboratórios e auditórios da unidade.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 bg-[#181c22] p-2 rounded-xl border border-gray-800">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-[#181c22] p-2.5 rounded-2xl border border-gray-800 shadow-md">
+          <div className="relative flex-1 sm:w-64">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Pesquisar sala..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-yellow-400 w-48 sm:w-64"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-sm text-white focus:outline-none focus:border-yellow-400 min-h-[44px]"
             />
           </div>
           <button
             id="btn-cadastrar-sala"
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-semibold rounded-lg text-sm transition"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold rounded-xl text-sm transition min-h-[44px] shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Cadastrar Sala</span>
@@ -188,8 +188,66 @@ export const SalasView: React.FC = () => {
         </div>
       </div>
 
-      {/* Table Section */}
-      <div className="bg-[#181c22] border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
+      {/* Mobile Card View (visible on mobile < 640px) */}
+      <div className="block sm:hidden space-y-3">
+        {loading ? (
+          <div className="bg-[#181c22] border border-gray-800 rounded-2xl p-8 text-center text-gray-400 flex items-center justify-center gap-2">
+            <RefreshCw className="w-5 h-5 animate-spin text-yellow-400" />
+            <span>Carregando salas...</span>
+          </div>
+        ) : filteredSalas.length === 0 ? (
+          <div className="bg-[#181c22] border border-gray-800 rounded-2xl p-8 text-center text-gray-400">
+            Nenhuma sala encontrada.
+          </div>
+        ) : (
+          filteredSalas.map((sala) => (
+            <div
+              key={sala.codigo}
+              className="bg-[#181c22] border border-gray-800 rounded-2xl p-4 shadow-lg space-y-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 bg-yellow-500 text-gray-950 font-bold rounded-lg text-sm">
+                    #{sala.codigo}
+                  </span>
+                  <h3 className="font-bold text-white text-base leading-snug">{sala.descricao}</h3>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-950/70 border border-blue-800 text-blue-300">
+                  <Layers className="w-3 h-3" />
+                  {andarLabels[sala.andar] || `Andar ${sala.andar}`}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-800 border border-gray-700 text-gray-300">
+                  <Users className="w-3 h-3 text-yellow-400" />
+                  {sala.capacidade} alunos
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-gray-800/80 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => openEditModal(sala)}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-400 hover:text-gray-950 border border-yellow-500/30 rounded-xl text-xs font-semibold min-h-[40px] transition"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Editar</span>
+                </button>
+                <button
+                  onClick={() => handleDeactivate(sala)}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 rounded-xl text-xs font-semibold min-h-[40px] transition"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Desativar</span>
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop / Tablet Table Section */}
+      <div className="hidden sm:block bg-[#181c22] border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -218,7 +276,7 @@ export const SalasView: React.FC = () => {
                 filteredSalas.map((sala) => (
                   <tr key={sala.codigo} className="hover:bg-gray-800/40 transition-colors">
                     <td className="py-4 px-6 font-bold text-white">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-gray-800 border border-gray-700 text-yellow-400">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gray-800 border border-gray-700 text-yellow-400">
                         {sala.codigo}
                       </span>
                     </td>
@@ -239,14 +297,14 @@ export const SalasView: React.FC = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openEditModal(sala)}
-                          className="p-1.5 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-400 hover:text-gray-950 rounded-lg transition"
+                          className="p-2 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-400 hover:text-gray-950 rounded-lg transition min-w-[36px] min-h-[36px] flex items-center justify-center"
                           title="Editar Sala"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeactivate(sala)}
-                          className="p-1.5 bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition"
+                          className="p-2 bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white rounded-lg transition min-w-[36px] min-h-[36px] flex items-center justify-center"
                           title="Desativar Sala"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -263,15 +321,15 @@ export const SalasView: React.FC = () => {
 
       {/* Modal Cadastro de Sala */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
-          <div className="bg-[#1a1f26] border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 bg-yellow-500 text-gray-950 flex items-center justify-between font-bold">
-              <h3>Cadastrar Nova Sala</h3>
-              <button onClick={() => setIsCreateOpen(false)} className="text-gray-950 hover:opacity-75 text-lg font-bold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-[#1a1f26] border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto max-h-[90vh] flex flex-col">
+            <div className="px-5 py-4 bg-yellow-500 text-gray-950 flex items-center justify-between font-bold shrink-0">
+              <h3 className="text-base sm:text-lg">Cadastrar Nova Sala</h3>
+              <button onClick={() => setIsCreateOpen(false)} className="text-gray-950 hover:opacity-75 text-xl font-bold p-1">
                 ✕
               </button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4">
+            <form onSubmit={handleCreate} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Número / Código da Sala</label>
                 <input
@@ -280,16 +338,16 @@ export const SalasView: React.FC = () => {
                   onChange={(e) => setNewCodigo(e.target.value)}
                   placeholder="Ex: 101"
                   required
-                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Andar</label>
                   <select
                     value={newAndar}
                     onChange={(e) => setNewAndar(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                   >
                     <option value="0">Térreo</option>
                     <option value="1">Primeiro</option>
@@ -308,7 +366,7 @@ export const SalasView: React.FC = () => {
                     onChange={(e) => setNewCapacidade(e.target.value)}
                     placeholder="Ex: 40"
                     required
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                   />
                 </div>
               </div>
@@ -320,20 +378,20 @@ export const SalasView: React.FC = () => {
                   onChange={(e) => setNewDescricao(e.target.value)}
                   placeholder="Ex: Laboratório de Informática 1"
                   required
-                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 pt-4 border-t border-gray-800">
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold rounded-lg text-sm"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold rounded-xl text-sm min-h-[44px]"
                 >
                   Cadastrar
                 </button>
@@ -345,15 +403,15 @@ export const SalasView: React.FC = () => {
 
       {/* Modal Editar Sala */}
       {isEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs">
-          <div className="bg-[#1a1f26] border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 bg-yellow-500 text-gray-950 flex items-center justify-between font-bold">
-              <h3>Editar Sala #{editId}</h3>
-              <button onClick={() => setIsEditOpen(false)} className="text-gray-950 hover:opacity-75 text-lg font-bold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-[#1a1f26] border border-gray-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto max-h-[90vh] flex flex-col">
+            <div className="px-5 py-4 bg-yellow-500 text-gray-950 flex items-center justify-between font-bold shrink-0">
+              <h3 className="text-base sm:text-lg">Editar Sala #{editId}</h3>
+              <button onClick={() => setIsEditOpen(false)} className="text-gray-950 hover:opacity-75 text-xl font-bold p-1">
                 ✕
               </button>
             </div>
-            <form onSubmit={handleEdit} className="p-6 space-y-4">
+            <form onSubmit={handleEdit} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Descrição</label>
                 <input
@@ -361,16 +419,16 @@ export const SalasView: React.FC = () => {
                   value={editDescricao}
                   onChange={(e) => setEditDescricao(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 uppercase mb-1">Andar</label>
                   <select
                     value={editAndar}
                     onChange={(e) => setEditAndar(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                   >
                     <option value="0">Térreo</option>
                     <option value="1">Primeiro</option>
@@ -388,21 +446,21 @@ export const SalasView: React.FC = () => {
                     value={editCapacidade}
                     onChange={(e) => setEditCapacidade(e.target.value)}
                     required
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:border-yellow-400 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-gray-900 border border-gray-700 rounded-xl text-white text-sm focus:border-yellow-400 focus:outline-none min-h-[44px]"
                   />
                 </div>
               </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-800">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 pt-4 border-t border-gray-800">
                 <button
                   type="button"
                   onClick={() => setIsEditOpen(false)}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm"
+                  className="w-full sm:w-auto px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl text-sm min-h-[44px]"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold rounded-lg text-sm"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold rounded-xl text-sm min-h-[44px]"
                 >
                   Salvar Alterações
                 </button>
