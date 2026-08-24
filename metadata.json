@@ -1,0 +1,8 @@
+{
+  "name": "Sistema de Mapa de Sala",
+  "description": "Sistema de gestão e mapeamento de salas, docentes, turmas, períodos e reservas com modo TV e relatórios.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

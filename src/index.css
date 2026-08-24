@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #121418;
+    color: #f3f4f6;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+}
+
+/* Custom styles mirroring original project's dark/gold palette */
+.card-theme {
+  background-color: #1e232a;
+  border: 1px solid #374151;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-theme:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px -5px rgba(234, 179, 8, 0.25);
+  background-color: #eab308;
+  color: #111827;
+  border-color: #eab308;
+}
+
+.card-theme:hover img {
+  filter: brightness(0.2);
+}
+
+.card-theme:hover h3,
+.card-theme:hover p,
+.card-theme:hover span {
+  color: #111827 !important;
+}
+
+/* Floor colors for TV Kiosk Mode */
+.floor-0 { background-color: #4b5563; }
+.floor-1 { background-color: #15803d; }
+.floor-2 { background-color: #0369a1; }
+.floor-3 { background-color: #7e22ce; }
+.floor-4 { background-color: #4338ca; }
+.floor-5 { background-color: #c2410c; }
+.floor-6 { background-color: #b91c1c; }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    color: black;
+  }
+}
