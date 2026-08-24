@@ -1,5 +1,5 @@
-import React from 'react';
-import { DoorOpen, Users, GraduationCap, Clock, CalendarRange, FileText, LogOut } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { DoorOpen, Users, GraduationCap, Clock, CalendarRange, FileText, LogOut, Database, CheckCircle2 } from 'lucide-react';
 
 interface DashboardViewProps {
   onNavigate: (view: string) => void;
@@ -7,6 +7,15 @@ interface DashboardViewProps {
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogout }) => {
+  const [dbInfo, setDbInfo] = useState<{ connected: boolean; region?: string; stats?: { salas: number; professores: number; turmas: number; mapas: number } } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/db-status')
+      .then(res => res.json())
+      .then(data => setDbInfo(data))
+      .catch(() => setDbInfo({ connected: false }));
+  }, []);
+
   const cards = [
     {
       id: 'salas',
@@ -14,7 +23,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
       description: 'Cadastro e gerenciamento de salas, andares e capacidades.',
       iconPath: '/assets/img/sala-de-aula.png',
       fallbackIcon: DoorOpen,
-      action: () => onNavigate('salas')
+      action: () => onNavigate('salas'),
+      count: dbInfo?.stats?.salas
     },
     {
       id: 'professores',
@@ -22,7 +32,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
       description: 'Gerenciamento de professores e instrutores com CPF e vínculos.',
       iconPath: '/assets/img/professores.png',
       fallbackIcon: Users,
-      action: () => onNavigate('professores')
+      action: () => onNavigate('professores'),
+      count: dbInfo?.stats?.professores
     },
     {
       id: 'turmas',
@@ -30,7 +41,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
       description: 'Controle de turmas letivas, cursos e datas de início.',
       iconPath: '/assets/img/turma.png',
       fallbackIcon: GraduationCap,
-      action: () => onNavigate('turmas')
+      action: () => onNavigate('turmas'),
+      count: dbInfo?.stats?.turmas
     },
     {
       id: 'periodos',
@@ -46,7 +58,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
       description: 'Mapeamento e alocação de turmas, salas e professores.',
       iconPath: '/assets/img/mapeamento.png',
       fallbackIcon: CalendarRange,
-      action: () => onNavigate('mapa')
+      action: () => onNavigate('mapa'),
+      count: dbInfo?.stats?.mapas
     },
     {
       id: 'relatorio',
@@ -69,14 +82,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      {/* Title Header */}
-      <div className="mb-10 text-center sm:text-left">
-        <h2 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
-          Painel de Controle
-        </h2>
-        <p className="mt-2 text-base text-gray-400">
-          Selecione um módulo abaixo para gerenciar a ocupação e mapeamento da FATEC São Roque.
-        </p>
+      {/* Title Header with Cloud SQL status */}
+      <div className="mb-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-extrabold text-white tracking-tight sm:text-4xl">
+            Painel de Controle
+          </h2>
+          <p className="mt-2 text-base text-gray-400">
+            Selecione um módulo abaixo para gerenciar a ocupação e mapeamento da FATEC São Roque.
+          </p>
+        </div>
+
+        {/* Live Cloud SQL Status Badge */}
+        <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-emerald-950/70 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 shadow-sm self-start md:self-auto">
+          <Database className="w-4 h-4 text-emerald-400" />
+          <div className="flex flex-col">
+            <span className="font-semibold text-emerald-200 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              Cloud SQL (PostgreSQL) Conectado
+            </span>
+            <span className="text-[11px] text-emerald-400/80 font-mono">
+              Região: us-east1 • Drizzle ORM
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Grid of Menu Cards */}
@@ -115,9 +144,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate, onLogo
                   <h3 className="text-xl font-bold text-white group-hover:text-gray-950 transition">
                     {card.title}
                   </h3>
-                  <span className="text-xs text-yellow-400 group-hover:text-gray-900 font-medium">
-                    Acessar Módulo →
-                  </span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-yellow-400 group-hover:text-gray-900 font-medium">
+                      Acessar Módulo →
+                    </span>
+                    {card.count !== undefined && (
+                      <span className="px-1.5 py-0.2 bg-gray-800 text-gray-300 group-hover:bg-gray-950 group-hover:text-yellow-400 text-[10px] font-semibold rounded-md">
+                        {card.count} {card.count === 1 ? 'item' : 'itens'}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

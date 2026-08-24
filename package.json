@@ -9,11 +9,18 @@
     "start": "node dist/server.cjs"
   },
   "dependencies": {
+    "@types/pg": "^8.23.1",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2",
     "express": "^4.21.2",
+    "firebase": "^12.18.0",
+    "firebase-admin": "^14.3.0",
     "lucide-react": "^1.16.0",
     "motion": "^12.4.0",
+    "pg": "^8.23.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sweetalert2": "^11.17.2",
